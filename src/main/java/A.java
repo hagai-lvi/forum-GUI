@@ -4,12 +4,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import javax.swing.*;
+import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -27,6 +29,7 @@ public class A {
 	private JPanel ForumPanel;
 
 	public A() {
+
 		button1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -35,23 +38,39 @@ public class A {
 				StringBuffer result = getResponse("http://localhost:8080/forum-system/gui/facade");
 
 				Object obj=JSONValue.parse(result.toString());
-				JSONObject arr = (JSONObject)obj;
+				JSONArray arr = (JSONArray)obj;
 
 				int numofForums = arr.size();
 				ForumButtons = new JButton[numofForums];
 
 				ForumPanel.setLayout(new BoxLayout(ForumPanel, BoxLayout.LINE_AXIS));
 //				frame.setPreferredSize(new Dimension(640, 480));
+				for (int i = 0; i < arr.size(); i++) {
+					JSONObject a = (JSONObject) arr.get(i);
+					String ss = (String)a.values().iterator().next();
+					ForumButtons[i] = new JButton(ss);
+					int j=i;
 
-				for (int i=0;i<numofForums;i++) {
-					ForumButtons[i] = new JButton("Forum"+i);
+					MyMouseAdapter listener = new MyMouseAdapter(ForumButtons[i]);
+					listener.setJ(i);
+
+					ForumButtons[i].addMouseListener(listener);
 					ForumButtons[i].setVisible(true);
 					ForumPanel.add(ForumButtons[i]);
 				}
 
-				ForumPanel.setPreferredSize(new Dimension(400,100));// changed it to preferredSize, Thanks!
+				ForumPanel.setPreferredSize(new Dimension(50*numofForums,100));// changed it to preferredSize, Thanks!
 				frame.setContentPane( ForumPanel);
 				frame.pack();
+			}
+		});
+	}
+
+	public static void addBtnListener(final JButton btn){
+		btn.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Forum a = new Forum(btn.getText());
 			}
 		});
 	}
