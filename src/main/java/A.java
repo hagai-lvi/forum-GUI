@@ -2,20 +2,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import javax.swing.*;
-import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Iterator;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 /**
  * Created by hagai_lvi on 5/24/15.
@@ -25,16 +22,15 @@ public class A {
 	private JPanel panel;
 	private JButton button1;
 	private JButton[] ForumButtons;
-	private JTextField textField1;
 	private JPanel ForumPanel;
+	private JPanel loginPanel;
+	private JTextField username, password;
 
 	public A() {
 
 		button1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				System.out.println("hello");
-				textField1.setText("hi");
 				StringBuffer result = getResponse("http://localhost:8080/forum-system/gui/facade");
 
 				Object obj=JSONValue.parse(result.toString());
@@ -58,12 +54,23 @@ public class A {
 					ForumButtons[i].setVisible(true);
 					ForumPanel.add(ForumButtons[i]);
 				}
+				initLoginPanel();
+				ForumPanel.add(loginPanel);
 
-				ForumPanel.setPreferredSize(new Dimension(50*numofForums,100));// changed it to preferredSize, Thanks!
+				System.out.println(numofForums);
+				ForumPanel.setPreferredSize(new Dimension(100*numofForums + 200,100));// changed it to preferredSize, Thanks!
 				frame.setContentPane( ForumPanel);
 				frame.pack();
 			}
 		});
+	}
+
+	private void initLoginPanel() {
+		loginPanel = new JPanel();
+		username = new JTextField(15);
+		password = new JPasswordField(15);
+		loginPanel.add(username);
+		loginPanel.add(password);
 	}
 
 	public static void addBtnListener(final JButton btn){
