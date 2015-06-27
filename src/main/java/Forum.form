@@ -14,7 +14,7 @@
         </constraints>
         <properties>
           <font size="48"/>
-          <text value="Forum Name"/>
+          <text value="Welcome to forum"/>
         </properties>
       </component>
       <hspacer id="3904b">

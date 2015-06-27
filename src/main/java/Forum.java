@@ -1,72 +1,87 @@
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import javax.swing.*;
-import java.awt.event.ComponentAdapter;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by Gila on 02/06/2015.
  */
 public class Forum {
-    private JButton[] ForumButtons;
+    public JButton[] subForumButtons;
     private JLabel ForumName;
-    private JPanel panel;
-    private JButton button1;
-    private JFrame frame;
+    private JPanel mainPanel, subforumPanels;
+    private JButton button1, backBtn;
+    private JFrame parentFrame;
+    public JFrame frame;
 
-    public Forum(String title) {
+
+    public Forum(String title, JFrame parent, JSONArray arr) {
+        this.parentFrame = parent;
+
         frame = new JFrame(title);
-        panel = new JPanel();
-        frame.setContentPane(panel);
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
+
+        backBtn = new JButton("back to main");
+        backBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                parentFrame.setVisible( true );
+                frame.dispose();
+            }
+        });
+        mainPanel.add(leftJustify(backBtn));
+
+        frame.setContentPane(mainPanel);
+
+        ForumName = new JLabel("Welcome to Forum "+title);
+        ForumName.setFont(new Font("arial",1,30));
+        mainPanel.add(leftJustify(ForumName));
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        StringBuffer result = getResponse("http://localhost:8080/forum-system/gui/forum/" + title);
 
-        Object obj = JSONValue.parse(result.toString());
-        JSONArray arr = (JSONArray) obj;
+
 
         int numofForums = arr.size();
-        ForumButtons = new JButton[numofForums];
+        subForumButtons = new JButton[numofForums];
+        subforumPanels = new JPanel();
 
-        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+
 //				frame.setPreferredSize(new Dimension(640, 480));
+        subforumPanels = new JPanel();
+        subforumPanels.setLayout(new BoxLayout(subforumPanels, BoxLayout.LINE_AXIS));
+//        subforumPanels.add(Box.createRigidArea(new Dimension(5,0)));
         for (int i = 0; i < arr.size(); i++) {
             JSONObject a = (JSONObject) arr.get(i);
-            String ss = (String)a.values().iterator().next();
-            ForumButtons[i] = new JButton(ss);
-            ForumButtons[i].setVisible(true);
-            panel.add(ForumButtons[i]);
+            String ss = a.values().iterator().next().toString();
+            subForumButtons[i] = new JButton(ss);
+            subForumButtons[i].setVisible(true);
+            //add mouse listener for clicking
+            MyMouseAdapterGetSubForum listener = new MyMouseAdapterGetSubForum(Forum.this);
+            listener.setJ(i);
+            subForumButtons[i].addMouseListener(listener);
+            subforumPanels.add(subForumButtons[i]);
+            subforumPanels.add(Box.createRigidArea(new Dimension(5,0)));
         }
+        mainPanel.add(leftJustify(subforumPanels));
         frame.pack();
         frame.setVisible(true);
     }
 
-    public static StringBuffer getResponse(String url){
-        HttpClient c  = HttpClientBuilder.create().build();
-        HttpGet req = new HttpGet(url);
-        try {
-            HttpResponse response = c.execute(req);
-            System.out.println(response.toString());
-            BufferedReader rd = new BufferedReader(
-                    new InputStreamReader(response.getEntity().getContent()));
-
-            StringBuffer result = new StringBuffer();
-            String line = "";
-            while ((line = rd.readLine()) != null) {
-                result.append(line);
-            }
-            return result;
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        return new StringBuffer();
+    private Component leftJustify(JComponent comp){
+        Box  b = Box.createHorizontalBox();
+        b.add(Box.createRigidArea(new Dimension(5,0)));
+        b.add( comp );
+        b.add( Box.createHorizontalGlue() );
+        // (Note that you could throw a lot more components
+        // and struts and glue in here.)
+        return b;
     }
 }
